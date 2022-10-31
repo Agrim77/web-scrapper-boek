@@ -1,10 +1,10 @@
 from flask import Flask
-import os
 
 # from types import NoneType
 # from currency_converter import CurrencyConverter
 from bs4 import BeautifulSoup
 import requests
+# from waitress import serve
 
 # from selenium import webdriver
 # from selenium.webdriver.chrome.options import Options
@@ -121,6 +121,5 @@ def index():
 
 
 if __name__ == "__main__":
-    from waitress import serve
-    serve(app, host="0.0.0.0", port=5000)
+    app.run()
 
