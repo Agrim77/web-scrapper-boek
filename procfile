@@ -1,1 +1,1 @@
-web: guincorn app:app
+web: python index.py
