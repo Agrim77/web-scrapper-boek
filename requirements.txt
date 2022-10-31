@@ -1,1 +1,1 @@
-currency.converter=0.5.5
+currency.converter==0.5.5
