@@ -126,3 +126,7 @@ def getBookFromISBN_ABE(ISBN):
         return response
     except Exception as e:
         return "Book not found on abebooks.com"
+
+
+if __name__ == "__main__":
+    app.run()
