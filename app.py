@@ -1,4 +1,5 @@
 from flask import Flask, url_for
+import os
 
 # from types import NoneType
 from currency_converter import CurrencyConverter
@@ -127,4 +128,8 @@ def getBookFromISBN_ABE(ISBN):
     except Exception as e:
         return "Book not found on abebooks.com"
 
-app.run(port=5000)
+PORT = int(os.environ.get('PORT', 5000))
+
+print(PORT)
+
+app.run(port=PORT)
