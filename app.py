@@ -113,9 +113,14 @@ def getBookFromISBN_ABE(ISBN):
         return response
     except Exception as e:
         return "Book not found on abebooks.com"
+    
 
-PORT = int(os.environ.get('PORT', 5000))
+@app.route("/")
+def index():
+    return "<h1>Hello!</h1>"
 
-print(PORT)
 
-app.run(port=PORT)
+if __name__ == "__main__":
+    from waitress import serve
+    serve(app, host="0.0.0.0", port=8080)
+
