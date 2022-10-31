@@ -2,7 +2,7 @@ from flask import Flask, url_for
 import os
 
 # from types import NoneType
-from currency_converter import CurrencyConverter
+# from currency_converter import CurrencyConverter
 from bs4 import BeautifulSoup
 import requests
 
@@ -121,8 +121,9 @@ def getBookFromISBN_ABE(ISBN):
             'meta', attrs={"itemprop": "name"})["content"]
         abePrice = abeFirstResult.find(
             'meta', attrs={"itemprop": "price"})["content"]
-        c = CurrencyConverter()
-        response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
+        # c = CurrencyConverter()
+        # response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
+        response["price"] = abePrice
 
         return response
     except Exception as e:
