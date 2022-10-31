@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 
 # from types import NoneType
 # from currency_converter import CurrencyConverter
@@ -12,6 +13,7 @@ import requests
 # from webdriver_manager.chrome import ChromeDriverManager
 
 app = Flask(__name__)
+CORS(app)
 
 '''' BOL '''
 @app.route("/bol/<ISBN>")
