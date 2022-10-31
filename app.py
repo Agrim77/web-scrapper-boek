@@ -123,7 +123,7 @@ def getBookFromISBN_ABE(ISBN):
             'meta', attrs={"itemprop": "price"})["content"]
         # c = CurrencyConverter()
         # response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
-        response["price"] = abePrice
+        response["price"] = abePrice*1.01
 
         return response
     except Exception as e:
