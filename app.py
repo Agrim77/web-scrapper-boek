@@ -18,25 +18,38 @@ CORS(app)
 '''' BOL '''
 @app.route("/bol/<ISBN>")
 def getBookFromISBN_BOL(ISBN):
-    bolURL = "https://www.bol.com/nl/nl/s/?searchtext="
-    page = requests.get(bolURL + str(ISBN))
+    bolURL = "https://www.bol.com/nl/nl/s/?searchtext=" + str(ISBN)
+    page = requests.get(bolURL)
     soup = BeautifulSoup(page.text, "lxml")
     try:
         response = {
             "title":"",
             "price":"",
-            "link": bolURL + str(ISBN)
+            "imgURL":"",
+            "link": bolURL
         }
-        content = soup.find_all('div', class_='product-item__content')[0]
-        response["title"] = content.find_all('a', class_='product-title')[0].get_text()
-        bolPriceSplit = content.find_all(
-            'div', class_='product-prices')[0].get_text().split()
-        if (bolPriceSplit[0] == 'Niet'):
-            response["price"] = bolPriceSplit[0] + ' ' + bolPriceSplit[1]
+        content = soup.find('div', class_='product-item__content');
+        bolTitle = content.find('a', class_='product-title').get_text()
+        bolPriceSections = content.find_all('div', class_='product-prices');
+        if(len(bolPriceSections) > 1):
+            bolUsedBook = content.find_all('div', class_='product-prices')[1]
+            bolURL = "https://www.bol.com" + bolUsedBook.find_all('a')[1]["href"]
+            bolPriceSplit = bolUsedBook.get_text().split()
+            bolPrice = bolPriceSplit[-1].replace(',', '.')
+            response["link"] = bolURL
         else:
-            response["price"] = bolPriceSplit[0] + '.' + bolPriceSplit[1]
-
-        response["price"]
+            bolPriceSection = bolPriceSections[0].find('meta', attrs={"itemprop": "price"});
+            if(bolPriceSection):
+                bolPrice = bolPriceSection["content"];
+            else:
+                bolPrice = " ".join(bolPriceSections[0].get_text().split());
+            
+        bolImage = soup.find('div', class_='product-item__image').find('img')["src"]
+        
+        response["title"] = bolTitle
+        response["price"] = bolPrice
+        response["imgURL"] = bolImage
+        
         return response
     except Exception as e:
         return "Book not found on bol.com"
@@ -45,20 +58,22 @@ def getBookFromISBN_BOL(ISBN):
 '''' BOEKWINKELTJES '''
 @app.route("/boekwinkeltjes/<ISBN>")
 def getBookFromISBN_BOEK(ISBN):
-    boekwinkeltjesURL = 'https://www.boekwinkeltjes.nl/s/?q='
-    page = requests.get(boekwinkeltjesURL + str(ISBN))
+    boekwinkeltjesURL = 'https://www.boekwinkeltjes.nl/s/?q=' + str(ISBN)
+    page = requests.get(boekwinkeltjesURL)
     soup = BeautifulSoup(page.text, 'lxml')
     try:
         response = {
             "title": "",
             "price": "",
-            "link": boekwinkeltjesURL + str(ISBN)
+            "imgURL":"",
+            "link": boekwinkeltjesURL
         }
         winkelTitleBlock = soup.find_all('td', class_='table-text')
         response["title"] = ' '.join(winkelTitleBlock[1].find(
             text=True, recursive=False).split())
         response["price"] = soup.find_all('td', class_='price')[
             0].strong.get_text()[2:]
+        response["imgURL"] = soup.find('td', class_="table-image").find('a').find('img')["src"]
 
         return response
     except Exception as e:
@@ -68,14 +83,15 @@ def getBookFromISBN_BOEK(ISBN):
 '''' DESLEGTE '''
 @app.route("/deslegte/<ISBN>")
 def getBookFromISBN_DES(ISBN):
-    deslegateURL = "https://www.deslegte.com/boeken/?q="
-    page = requests.get(deslegateURL + str(ISBN))
+    deslegateURL = "https://www.deslegte.com/boeken/?q=" + str(ISBN)
+    page = requests.get(deslegateURL)
     soup = BeautifulSoup(page.text, 'lxml')
     try:
         response = {
             "title": "",
             "price": "",
-            "link": deslegateURL + str(ISBN)
+            "imgURL":"",
+            "link": deslegateURL
         }
         deslContent = soup.find_all('div', class_='book')[0]
         response["title"] = deslContent.h3.get_text()
@@ -85,6 +101,7 @@ def getBookFromISBN_DES(ISBN):
         except:
             response["price"] = ' '.join(deslContent.find_all(
                 'div', class_='price no-stock')[0].get_text().split())
+        response["imgURL"] = "https://www.deslegte.com" + deslContent.find('img')["src"]
 
         return response
     except Exception as e:
@@ -94,23 +111,24 @@ def getBookFromISBN_DES(ISBN):
 '''' ABEBOOKS '''
 @app.route("/abebooks/<ISBN>")
 def getBookFromISBN_ABE(ISBN):
-    abeURL = "https://www.abebooks.com/servlet/SearchResults?pt=book&sortby=2&kn="
-    page = requests.get(abeURL + str(ISBN))
+    abeURL = "https://www.abebooks.com/servlet/SearchResults?pt=book&sortby=2&kn=" + str(ISBN)
+    page = requests.get(abeURL)
     soup = BeautifulSoup(page.text, 'lxml')
     try:
         response = {
             "title": "",
             "price": "",
-            "link": abeURL + str(ISBN)
+            "imgURL":"",
+            "link": abeURL
         }
         abeFirstResult = soup.find('ul', class_='result-block').li
         response["title"] = abeFirstResult.find(
             'meta', attrs={"itemprop": "name"})["content"]
         abePrice = abeFirstResult.find(
             'meta', attrs={"itemprop": "price"})["content"]
-        # c = CurrencyConverter()
-        # response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
-        response["price"] = abePrice*1.01
+        c = CurrencyConverter()
+        response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
+        response["imgURL"] = abeFirstResult.find("img")["src"]
 
         return response
     except Exception as e:
