@@ -21,7 +21,7 @@ def getBookFromISBN_BOL(ISBN):
     
     ISBNs = ISBN.split(',')
 
-    responses = []
+    responses = {}
 
     for isbn in ISBNs:
 
@@ -56,14 +56,14 @@ def getBookFromISBN_BOL(ISBN):
             response["title"] = bolTitle
             response["price"] = bolPrice
             response["imgURL"] = bolImage
-            responses.append(response)
+            responses[isbn] = response
         except Exception as e:
             responses.append({"error": "Book not found on bol.com"}) 
 
     if len(ISBNs) == 1:
-        return responses[0]
+        return responses[ISBN]
         
-    return {responses: responses}
+    return responses
 
 
 '''' BOEKWINKELTJES '''
