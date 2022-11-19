@@ -18,41 +18,52 @@ CORS(app)
 '''' BOL '''
 @app.route("/bol/<ISBN>")
 def getBookFromISBN_BOL(ISBN):
-    bolURL = "https://www.bol.com/nl/nl/s/?searchtext=" + str(ISBN)
-    page = requests.get(bolURL)
-    soup = BeautifulSoup(page.text, "lxml")
-    try:
-        response = {
-            "title":"",
-            "price":"",
-            "imgURL":"",
-            "link": bolURL
-        }
-        content = soup.find('div', class_='product-item__content');
-        bolTitle = content.find('a', class_='product-title').get_text()
-        bolPriceSections = content.find_all('div', class_='product-prices');
-        if(len(bolPriceSections) > 1):
-            bolUsedBook = content.find_all('div', class_='product-prices')[1]
-            bolURL = "https://www.bol.com" + bolUsedBook.find_all('a')[1]["href"]
-            bolPriceSplit = bolUsedBook.get_text().split()
-            bolPrice = bolPriceSplit[-1].replace(',', '.')
-            response["link"] = bolURL
-        else:
-            bolPriceSection = bolPriceSections[0].find('meta', attrs={"itemprop": "price"});
-            if(bolPriceSection):
-                bolPrice = bolPriceSection["content"];
+    
+    ISBNs = ISBN.split(',')
+
+    responses = []
+
+    for isbn in ISBNs:
+
+        bolURL = "https://www.bol.com/nl/nl/s/?searchtext=" + str(isbn)
+        page = requests.get(bolURL)
+        soup = BeautifulSoup(page.text, "lxml")
+        try:
+            response = {
+                "title":"",
+                "price":"",
+                "imgURL":"",
+                "link": bolURL
+            }
+            content = soup.find('div', class_='product-item__content');
+            bolTitle = content.find('a', class_='product-title').get_text()
+            bolPriceSections = content.find_all('div', class_='product-prices');
+            if(len(bolPriceSections) > 1):
+                bolUsedBook = content.find_all('div', class_='product-prices')[1]
+                bolURL = "https://www.bol.com" + bolUsedBook.find_all('a')[1]["href"]
+                bolPriceSplit = bolUsedBook.get_text().split()
+                bolPrice = bolPriceSplit[-1].replace(',', '.')
+                response["link"] = bolURL
             else:
-                bolPrice = " ".join(bolPriceSections[0].get_text().split());
+                bolPriceSection = bolPriceSections[0].find('meta', attrs={"itemprop": "price"});
+                if(bolPriceSection):
+                    bolPrice = bolPriceSection["content"];
+                else:
+                    bolPrice = " ".join(bolPriceSections[0].get_text().split());
+                
+            bolImage = soup.find('div', class_='product-item__image').find('img')["src"]
             
-        bolImage = soup.find('div', class_='product-item__image').find('img')["src"]
+            response["title"] = bolTitle
+            response["price"] = bolPrice
+            response["imgURL"] = bolImage
+            responses.append(response)
+        except Exception as e:
+            responses.append({"error": "Book not found on bol.com"}) 
+
+    if len(ISBNs) == 1:
+        return responses[0]
         
-        response["title"] = bolTitle
-        response["price"] = bolPrice
-        response["imgURL"] = bolImage
-        
-        return response
-    except Exception as e:
-        return "Book not found on bol.com"
+    return responses
 
 
 '''' BOEKWINKELTJES '''
