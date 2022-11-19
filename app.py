@@ -63,7 +63,7 @@ def getBookFromISBN_BOL(ISBN):
     if len(ISBNs) == 1:
         return responses[0]
         
-    return {responses}
+    return {responses: responses}
 
 
 '''' BOEKWINKELTJES '''
