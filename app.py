@@ -58,7 +58,7 @@ def getBookFromISBN_BOL(ISBN):
             response["imgURL"] = bolImage
             responses[isbn] = response
         except Exception as e:
-            responses.append({"error": "Book not found on bol.com"}) 
+            responses[isbn] = {"error": "Book not found on bol.com"}
 
     if len(ISBNs) == 1:
         return responses[ISBN]
