@@ -148,7 +148,7 @@ def getBookFromISBN_ABE(ISBN):
 
 '''' AMAZON '''
 @app.route("/amazon/<ISBN>")
-def getBookFromISBN_ABE(ISBN):
+def getBookFromISBN_AMAZON(ISBN):
     
     if ISBN == "9789025759919":
         return {
