@@ -144,7 +144,34 @@ def getBookFromISBN_ABE(ISBN):
         return response
     except Exception as e:
         return "Book not found on abebooks.com"
+
+
+'''' AMAZON '''
+@app.route("/amazon/<ISBN>")
+def getBookFromISBN_ABE(ISBN):
     
+    if ISBN == "9789025759919":
+        return {
+            "title": "Boer Boris gaat naar de markt",
+            "price": "14.99",
+            "imgURL": "https://m.media-amazon.com/images/I/61Nci0PPeYL._SX497_BO1,204,203,200_.jpg",
+            "link": "https://amzn.to/3gdNhLu"
+        }
+    elif ISBN == "9789047820017":
+        return {
+            "title": "Boer Boris doeboek",
+            "price": "5.99",
+            "imgURL": "https://m.media-amazon.com/images/I/61guKqHcH2L._SX597_BO1,204,203,200_.jpg",
+            "link": "https://amzn.to/3EnGvKS"
+        }
+    elif ISBN == "9789025774639":
+        return {
+            "title": "Boer Boris start de motor!: een uitklapboek",
+            "price": "12.99",
+            "imgURL": "https://m.media-amazon.com/images/I/51qCkoJsS6L._SY487_BO1,204,203,200_.jpg",
+            "link": "https://amzn.to/3GrLywv"
+        }
+    return "Book not found on abebooks.com"
 
 @app.route("/")
 def index():
