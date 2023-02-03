@@ -130,33 +130,28 @@ def getBookFromISBN_DES(ISBN):
 @app.route("/abebooks/<ISBN>")
 def getBookFromISBN_ABE(ISBN):
 
-    url = "https://search2.abebooks.com/search?clientkey=e5d85298-dcc3-42b2-a9ab-9c3e63bce99d&isbn="+str(ISBN)
-    r = requests.get(url)
-    data =  xmltodict.parse(r.text)
-    return data
+    try:
+        url = "https://search2.abebooks.com/search?clientkey=e5d85298-dcc3-42b2-a9ab-9c3e63bce99d&isbn="+str(ISBN)
+        r = requests.get(url)
+        data =  xmltodict.parse(r.text)
 
-    # abeURL = "https://www.abebooks.com/servlet/SearchResults?pt=book&sortby=2&kn=" + str(ISBN)
-    # page = requests.get(abeURL)
-    # soup = BeautifulSoup(page.text, 'lxml')
-    # try:
-    #     response = {
-    #         "title": "",
-    #         "price": "",
-    #         "imgURL":"",
-    #         "link": abeURL
-    #     }
-    #     abeFirstResult = soup.find('ul', class_='result-block').li
-    #     response["title"] = abeFirstResult.find(
-    #         'meta', attrs={"itemprop": "name"})["content"]
-    #     abePrice = abeFirstResult.find(
-    #         'meta', attrs={"itemprop": "price"})["content"]
-    #     c = CurrencyConverter()
-    #     response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
-    #     response["imgURL"] = abeFirstResult.find("img")["src"]
+        if len(data['searchResults']['books']) != 0:
+            book = data['searchResults']['books'][0]
+            page = requests.get(abeURL)
+            soup = BeautifulSoup(page.text, 'lxml')
+            response = {
+                "title": book['title'],
+                "price": book['listingPrice'],
+                "imgURL": book['catalogImage'],
+                "link": book['listingUrl']
+            }
 
-    #     return response
-    # except Exception as e:
-    #     return "Book not found on abebooks.com"
+        else:
+            return "Book not found on abebooks.com"
+
+        return response
+    except Exception as e:
+        return "Book not found on abebooks.com"
 
 
 '''' AMAZON '''
