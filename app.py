@@ -144,7 +144,7 @@ def getBookFromISBN_ABE(ISBN):
                         "title": book['title'],
                         "price": book['listingPrice'],
                         "imgURL": book['catalogImage'],
-                        "link": book['listingUrl']
+                        "link": 'https://'+book['listingUrl']
                     }
                     eur = True
                     break
@@ -154,7 +154,7 @@ def getBookFromISBN_ABE(ISBN):
                     "title": book['title'],
                     "price": book['listingPrice'],
                     "imgURL": book['catalogImage'],
-                    "link": book['listingUrl']
+                    "link": 'https://'+book['listingUrl']
                 }
             return response
 
