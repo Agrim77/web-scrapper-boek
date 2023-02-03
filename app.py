@@ -137,19 +137,17 @@ def getBookFromISBN_ABE(ISBN):
 
         if len(data['searchResults']['Book']) != 0:
             book = data['searchResults']['Book'][0]
-            page = requests.get(abeURL)
-            soup = BeautifulSoup(page.text, 'lxml')
             response = {
                 "title": book['title'],
                 "price": book['listingPrice'],
                 "imgURL": book['catalogImage'],
                 "link": book['listingUrl']
             }
+            return response
 
         else:
             return "Book not found on abebooks.com"
 
-        return response
     except Exception as e:
         return "Book not found on abebooks.com"
 
