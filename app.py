@@ -136,13 +136,26 @@ def getBookFromISBN_ABE(ISBN):
         data =  xmltodict.parse(r.text)
 
         if len(data['searchResults']['Book']) != 0:
-            book = data['searchResults']['Book'][0]
-            response = {
-                "title": book['title'],
-                "price": book['listingPrice'],
-                "imgURL": book['catalogImage'],
-                "link": book['listingUrl']
-            }
+
+            eur = False
+            for book in data['searchResults']['Book']:
+                if book['vendorCurrency'] == 'EUR':
+                    response = {
+                        "title": book['title'],
+                        "price": book['listingPrice'],
+                        "imgURL": book['catalogImage'],
+                        "link": book['listingUrl']
+                    }
+                    eur = True
+                    break
+            if eur == False:
+                book = data['searchResults']['Book'][0]
+                response = {
+                    "title": book['title'],
+                    "price": book['listingPrice'],
+                    "imgURL": book['catalogImage'],
+                    "link": book['listingUrl']
+                }
             return response
 
         else:
