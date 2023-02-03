@@ -135,8 +135,8 @@ def getBookFromISBN_ABE(ISBN):
         r = requests.get(url)
         data =  xmltodict.parse(r.text)
 
-        if len(data['searchResults']['books']) != 0:
-            book = data['searchResults']['books'][0]
+        if len(data['searchResults']['Book']) != 0:
+            book = data['searchResults']['Book'][0]
             page = requests.get(abeURL)
             soup = BeautifulSoup(page.text, 'lxml')
             response = {
