@@ -13,3 +13,4 @@ requests==2.26.0
 selenium==4.5.0
 waitress==2.1.2
 webdriver-manager==3.8.4
+xmltodict==0.13.0

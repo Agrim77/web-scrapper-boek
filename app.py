@@ -4,6 +4,7 @@ from flask_cors import CORS
 from currency_converter import CurrencyConverter
 from bs4 import BeautifulSoup
 import requests
+import xmltodict
 # from waitress import serve
 
 app = Flask(__name__)
@@ -129,28 +130,33 @@ def getBookFromISBN_DES(ISBN):
 @app.route("/abebooks/<ISBN>")
 def getBookFromISBN_ABE(ISBN):
 
-    abeURL = "https://www.abebooks.com/servlet/SearchResults?pt=book&sortby=2&kn=" + str(ISBN)
-    page = requests.get(abeURL)
-    soup = BeautifulSoup(page.text, 'lxml')
-    try:
-        response = {
-            "title": "",
-            "price": "",
-            "imgURL":"",
-            "link": abeURL
-        }
-        abeFirstResult = soup.find('ul', class_='result-block').li
-        response["title"] = abeFirstResult.find(
-            'meta', attrs={"itemprop": "name"})["content"]
-        abePrice = abeFirstResult.find(
-            'meta', attrs={"itemprop": "price"})["content"]
-        c = CurrencyConverter()
-        response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
-        response["imgURL"] = abeFirstResult.find("img")["src"]
+    url = "https://search2.abebooks.com/search?clientkey=e5d85298-dcc3-42b2-a9ab-9c3e63bce99d&isbn="+str(ISBN)
+    r = requests.get(url)
+    data =  xmltodict.parse(r.text)
+    return data
 
-        return response
-    except Exception as e:
-        return "Book not found on abebooks.com"
+    # abeURL = "https://www.abebooks.com/servlet/SearchResults?pt=book&sortby=2&kn=" + str(ISBN)
+    # page = requests.get(abeURL)
+    # soup = BeautifulSoup(page.text, 'lxml')
+    # try:
+    #     response = {
+    #         "title": "",
+    #         "price": "",
+    #         "imgURL":"",
+    #         "link": abeURL
+    #     }
+    #     abeFirstResult = soup.find('ul', class_='result-block').li
+    #     response["title"] = abeFirstResult.find(
+    #         'meta', attrs={"itemprop": "name"})["content"]
+    #     abePrice = abeFirstResult.find(
+    #         'meta', attrs={"itemprop": "price"})["content"]
+    #     c = CurrencyConverter()
+    #     response["price"] = str(round(c.convert(float(abePrice), 'USD', 'EUR'), 2))
+    #     response["imgURL"] = abeFirstResult.find("img")["src"]
+
+    #     return response
+    # except Exception as e:
+    #     return "Book not found on abebooks.com"
 
 
 '''' AMAZON '''
