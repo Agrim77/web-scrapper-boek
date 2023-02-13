@@ -149,13 +149,15 @@ def getBookFromISBN_ABE(ISBN):
                     eur = True
                     break
             if eur == False:
-                book = data['searchResults']['Book'][0]
-                response = {
-                    "title": book['title'],
-                    "price": book['listingPrice'],
-                    "imgURL": book['catalogImage'],
-                    "link": 'https://'+book['listingUrl']
-                }
+                for book in data['searchResults']['Book']:
+                    if book['vendorCurrency'] == 'USD':
+                        response = {
+                            "title": book['title'],
+                            "price": book['listingPrice']*0.92,
+                            "imgURL": book['catalogImage'],
+                            "link": 'https://'+book['listingUrl']
+                        }
+                        break
             return response
 
         else:
