@@ -5,13 +5,20 @@ from currency_converter import CurrencyConverter
 from bs4 import BeautifulSoup
 import requests
 import xmltodict
+import base64
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 # from waitress import serve
 
 app = Flask(__name__)
+limiter = Limiter(app, key_func=get_remote_address, default_limits=["1 per 5 seconds"])
 CORS(app)
 
 '''' BOL '''
 @app.route("/bol/<ISBN>")
+@limiter.limit("1 per 5 seconds")
 def getBookFromISBN_BOL(ISBN):
     ISBNs = ISBN.split(',')
     responses = {}
@@ -51,13 +58,14 @@ def getBookFromISBN_BOL(ISBN):
                 try:
                     response = requests.get(bolURL, headers=headers, params={
                                     "includeattributes": "true", 
-                                    "q": '9781611805901', 
+                                    "q": isbn, 
                                     "limit": 1})
                     
                     if response.status_code == 200:
                         data = response.json()
                         singleData = data["products"][0]
-                        
+
+                        tempUrl = tempImage = tempBinding = tempLanguage = None
                         for url in singleData['urls']:
                             if url["key"] == "DESKTOP":
                                 tempUrl = url["value"]
@@ -74,18 +82,18 @@ def getBookFromISBN_BOL(ISBN):
                                     if content["key"] == "Language":
                                         tempLanguage = content["value"]
                                 
-                        singleBookResponse["title"] = singleData["title"]
-                        singleBookResponse["price"] = singleData['offerData']['offers'][0]['price']
-                        singleBookResponse["imgURL"] = tempImage
-                        singleBookResponse["binding"] = tempBinding
-                        singleBookResponse["language"] = tempLanguage
-                        singleBookResponse["link"] = tempUrl
+                        singleBookResponse["title"] = singleData["title"] if singleData["title"] else None
+                        singleBookResponse["price"] = singleData['offerData']['offers'][0]['price'] if singleData['offerData']['offers'][0]['price'] else None
+                        singleBookResponse["imgURL"] = tempImage if tempImage else None
+                        singleBookResponse["binding"] = tempBinding if tempBinding else None
+                        singleBookResponse["language"] = tempLanguage if tempLanguage else None
+                        singleBookResponse["link"] = tempUrl if tempUrl else None
                         responses[isbn] = singleBookResponse
                         
                 except Exception as e:
-                    raise e
+                    responses[isbn] = {"error": "Book not found on bol.com - 1"}
         except Exception as e:
-                    raise e
+                    responses[isbn] = {"error": "Book not found on bol.com - 2"}
     
     if len(ISBNs) == 1:
         return responses[ISBN]
