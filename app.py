@@ -123,7 +123,7 @@ def getBookFromISBN_BOEK(ISBN):
 
         return response
     except Exception as e:
-        return "Book not found on bol.com"
+        return "Book not found on boekwinkeltjes.nl"
 
 
 '''' DESLEGTE '''
@@ -192,33 +192,66 @@ def getBookFromISBN_ABE(ISBN):
     except Exception as e:
         return "Book not found on abebooks.com"
 
-
 '''' AMAZON '''
 @app.route("/amazon/<ISBN>")
 def getBookFromISBN_AMAZON(ISBN):
+    amazonURL = f"https://www.amazon.nl/s?k={ISBN}&i=stripbooks&sprefix={ISBN}%2Cstripbooks%2C196"
+    page = requests.get(amazonURL)
+    soup = BeautifulSoup(page.text, 'html.parser')
+    try:
+        response = {
+            "title": "",
+            "price": "",
+            "imgURL":"",
+            "link": amazonURL
+        }
+        # Title
+        response["title"] = soup.find('span', class_='a-size-medium a-color-base a-text-normal').text.strip()
+
+        # Price
+        productPrice = soup.find('span', class_='a-price-whole').text.strip()
+        productPriceSymbol = soup.find('span', class_='a-price-symbol').text.strip()
+        if productPriceSymbol == "€":
+            response["price"] = productPrice
+            
+        # Image URL
+        productImage = soup.find('img', class_='s-image')
+        response["imgURL"] = productImage["src"]
+
+        # Link
+        productURL = soup.find('a', class_='a-link-normal s-underline-text s-underline-link-text s-link-style a-text-normal')
+        response["link"] = "https://amazon.nl" + productURL["href"]
+
+        return response
+    except Exception as e:
+        return "Book not found on amazon.nl"
+        
+'''' AMAZON - OLD CODE '''
+# @app.route("/amazon/<ISBN>")
+# def getBookFromISBN_AMAZON(ISBN):
     
-    if ISBN == "9789025759919":
-        return {
-            "title": "Boer Boris gaat naar de markt",
-            "price": "14.99",
-            "imgURL": "https://m.media-amazon.com/images/I/61Nci0PPeYL._SX497_BO1,204,203,200_.jpg",
-            "link": "https://amzn.to/3gdNhLu"
-        }
-    elif ISBN == "9789047820017":
-        return {
-            "title": "Boer Boris doeboek",
-            "price": "5.99",
-            "imgURL": "https://m.media-amazon.com/images/I/61guKqHcH2L._SX597_BO1,204,203,200_.jpg",
-            "link": "https://amzn.to/3EnGvKS"
-        }
-    elif ISBN == "9789025774639":
-        return {
-            "title": "Boer Boris start de motor!: een uitklapboek",
-            "price": "12.99",
-            "imgURL": "https://m.media-amazon.com/images/I/51qCkoJsS6L._SY487_BO1,204,203,200_.jpg",
-            "link": "https://amzn.to/3GrLywv"
-        }
-    return "Book not found on amazon.com"
+#     if ISBN == "9789025759919":
+#         return {
+#             "title": "Boer Boris gaat naar de markt",
+#             "price": "14.99",
+#             "imgURL": "https://m.media-amazon.com/images/I/61Nci0PPeYL._SX497_BO1,204,203,200_.jpg",
+#             "link": "https://amzn.to/3gdNhLu"
+#         }
+#     elif ISBN == "9789047820017":
+#         return {
+#             "title": "Boer Boris doeboek",
+#             "price": "5.99",
+#             "imgURL": "https://m.media-amazon.com/images/I/61guKqHcH2L._SX597_BO1,204,203,200_.jpg",
+#             "link": "https://amzn.to/3EnGvKS"
+#         }
+#     elif ISBN == "9789025774639":
+#         return {
+#             "title": "Boer Boris start de motor!: een uitklapboek",
+#             "price": "12.99",
+#             "imgURL": "https://m.media-amazon.com/images/I/51qCkoJsS6L._SY487_BO1,204,203,200_.jpg",
+#             "link": "https://amzn.to/3GrLywv"
+#         }
+#     return "Book not found on amazon.com"
 
 
 '''' BOL - OLD CODE '''
