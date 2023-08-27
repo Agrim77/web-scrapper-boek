@@ -32,6 +32,11 @@ def getBookFromISBN_BOL(ISBN):
     encoded_message = base64_bytes.decode('ascii')
     authorization_header = f"Basic {encoded_message}"
 
+    # Affiliate program details
+    siteId = "1202520" # Replace with your actual SiteId
+    subId = "affiliate" # Replace with your SubID - Used for personal tracking
+    name = "boekengezocht_second_hand_pdp" # Replace with your Name - Used for personal tracking
+
     for isbn in ISBNs:
         singleBookResponse = {
             "title": "",
@@ -102,11 +107,15 @@ def getBookFromISBN_BOL(ISBN):
                                         if content["key"] == "Language":
                                             tempLanguage = content["value"]
 
+                            # Generate the affiliate URL using the obtained product data
+                            affiliateUrl = f"http://partner.bol.com/click/click?p=1&t=url&s={siteId}&url={tempUrl}&f=TXL&subid={subId}&name={name}"
+                            print("Affiliate URL is -> ", affiliateUrl)
+
                             singleBookResponse["title"] = singleData["title"] if singleData["title"] else None
                             singleBookResponse["imgURL"] = tempImage if tempImage else None
                             singleBookResponse["binding"] = tempBinding if tempBinding else None
                             singleBookResponse["language"] = tempLanguage if tempLanguage else None
-                            singleBookResponse["link"] = tempUrl if tempUrl else None
+                            singleBookResponse["link"] = affiliateUrl if affiliateUrl else None
 
                             # Continue with your code...
 
