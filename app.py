@@ -22,7 +22,7 @@ CORS(app)
 def getBookFromISBN_BOL(ISBN):
     ISBNs = ISBN.split(',')
     responses = {}
-    
+
     # Authentication Process
     client_id = "c866b744-6084-4afc-b575-137d176c9be6"
     client_secret = "a5MZZ10Yg!XFjCQDmecxU1hmtfwIQKJKZebB3WXoO?4CAsPyRVfs(zQ(pUON)q(8"
@@ -31,74 +31,179 @@ def getBookFromISBN_BOL(ISBN):
     base64_bytes = base64.b64encode(message_bytes)
     encoded_message = base64_bytes.decode('ascii')
     authorization_header = f"Basic {encoded_message}"
-    
+
     for isbn in ISBNs:
         singleBookResponse = {
-            "title":"",
-            "price":"",
-            "imgURL":"",
+            "title": "",
+            "price": "",
+            "imgURL": "",
             "link": "",
             "binding": "",
             "language": ""
         }
-        
+
         bolURL = "https://api.bol.com/catalog/v4/search"
         bolAuthenticateURL = "https://login.bol.com/token?grant_type=client_credentials"
         headers = {"Authorization": authorization_header}
-        
+
         try:
             response = requests.post(bolAuthenticateURL, headers=headers)
-            print(response)
-            
             if response.status_code == 200:
                 access_token = response.json()["access_token"]
                 bearer_token = f"Bearer {access_token}"
                 headers = {"Authorization": bearer_token}
-                
+
                 try:
                     response = requests.get(bolURL, headers=headers, params={
-                                    "includeattributes": "true", 
-                                    "q": isbn, 
-                                    "limit": 1})
-                    
+                        "includeattributes": "true",
+                        "q": isbn,
+                        "limit": 1
+                    })
+
                     if response.status_code == 200:
                         data = response.json()
-                        singleData = data["products"][0]
+                        productId = data["products"][0]["id"]
+                        productURL = f"https://api.bol.com/catalog/v4/products/{productId}?offers=all"
+                        productResponse = requests.get(productURL, headers=headers, params={
+                            "includeattributes": "true",
+                            "q": productId,
+                            "limit": 1
+                        })
 
-                        tempUrl = tempImage = tempBinding = tempLanguage = None
-                        for url in singleData['urls']:
-                            if url["key"] == "DESKTOP":
-                                tempUrl = url["value"]
-                                
-                        for images in singleData['images']:
-                            if images["key"] == "XL":
-                                tempImage = images["url"]
-                                
-                        for contents in singleData['attributeGroups']:
-                            if contents["title"] == "Inhoud":
-                                for content in contents["attributes"]:
-                                    if content["key"] == "Binding":
-                                        tempBinding = content["value"]
-                                    if content["key"] == "Language":
-                                        tempLanguage = content["value"]
-                                
-                        singleBookResponse["title"] = singleData["title"] if singleData["title"] else None
-                        singleBookResponse["price"] = singleData['offerData']['offers'][0]['price'] if singleData['offerData']['offers'][0]['price'] else None
-                        singleBookResponse["imgURL"] = tempImage if tempImage else None
-                        singleBookResponse["binding"] = tempBinding if tempBinding else None
-                        singleBookResponse["language"] = tempLanguage if tempLanguage else None
-                        singleBookResponse["link"] = tempUrl if tempUrl else None
-                        responses[isbn] = singleBookResponse
-                        
+                        print("Product Response Status -> ", productResponse.status_code)
+
+                        if productResponse.status_code == 200:
+                            productData = productResponse.json()
+                            print("Product Response Data -> ", productData)
+                            offers = productData["products"][0]['offerData']['offers']
+                            if offers:
+                                # Find the lowest price offer
+                                lowest_price_offer = min(offers, key=lambda offer: offer['price'])
+                                singleBookResponse["price"] = lowest_price_offer['price']
+
+
+                            singleData = productData["products"][0]
+                            print("Single Data -> ", singleData)
+
+                            tempUrl = tempImage = tempBinding = tempLanguage = None
+                            for url in singleData['urls']:
+                                if url["key"] == "DESKTOP":
+                                    tempUrl = url["value"]
+
+                            for images in singleData['images']:
+                                if images["key"] == "XL":
+                                    tempImage = images["url"]
+
+                            for contents in singleData['attributeGroups']:
+                                if contents["title"] == "Inhoud":
+                                    for content in contents["attributes"]:
+                                        if content["key"] == "Binding":
+                                            tempBinding = content["value"]
+                                        if content["key"] == "Language":
+                                            tempLanguage = content["value"]
+
+                            singleBookResponse["title"] = singleData["title"] if singleData["title"] else None
+                            singleBookResponse["imgURL"] = tempImage if tempImage else None
+                            singleBookResponse["binding"] = tempBinding if tempBinding else None
+                            singleBookResponse["language"] = tempLanguage if tempLanguage else None
+                            singleBookResponse["link"] = tempUrl if tempUrl else None
+
+                            # Continue with your code...
+
+                            # responses[isbn] = singleBookResponse
+
                 except Exception as e:
-                    responses[isbn] = {"error": "Book not found on bol.com - 1"}
+                    responses[isbn] = {"error": "Product API call error"}
         except Exception as e:
-                    responses[isbn] = {"error": "Book not found on bol.com - 2"}
-    
+            responses[isbn] = {"error": "Authentication error"}
+
+        responses[isbn] = singleBookResponse
+
     if len(ISBNs) == 1:
         return responses[ISBN]
-    
+
     return responses
+
+# def getBookFromISBN_BOL(ISBN):
+#     ISBNs = ISBN.split(',')
+#     responses = {}
+    
+#     # Authentication Process
+#     client_id = "c866b744-6084-4afc-b575-137d176c9be6"
+#     client_secret = "a5MZZ10Yg!XFjCQDmecxU1hmtfwIQKJKZebB3WXoO?4CAsPyRVfs(zQ(pUON)q(8"
+#     message = f"{client_id}:{client_secret}"
+#     message_bytes = message.encode('ascii')
+#     base64_bytes = base64.b64encode(message_bytes)
+#     encoded_message = base64_bytes.decode('ascii')
+#     authorization_header = f"Basic {encoded_message}"
+    
+#     for isbn in ISBNs:
+#         singleBookResponse = {
+#             "title":"",
+#             "price":"",
+#             "imgURL":"",
+#             "link": "",
+#             "binding": "",
+#             "language": ""
+#         }
+        
+#         bolURL = "https://api.bol.com/catalog/v4/search"
+#         bolAuthenticateURL = "https://login.bol.com/token?grant_type=client_credentials"
+#         headers = {"Authorization": authorization_header}
+        
+#         try:
+#             response = requests.post(bolAuthenticateURL, headers=headers)
+#             print(response)
+            
+#             if response.status_code == 200:
+#                 access_token = response.json()["access_token"]
+#                 bearer_token = f"Bearer {access_token}"
+#                 headers = {"Authorization": bearer_token}
+                
+#                 try:
+#                     response = requests.get(bolURL, headers=headers, params={
+#                                     "includeattributes": "true", 
+#                                     "q": isbn, 
+#                                     "limit": 1})
+                    
+#                     if response.status_code == 200:
+#                         data = response.json()
+#                         singleData = data["products"][0]
+
+#                         tempUrl = tempImage = tempBinding = tempLanguage = None
+#                         for url in singleData['urls']:
+#                             if url["key"] == "DESKTOP":
+#                                 tempUrl = url["value"]
+                                
+#                         for images in singleData['images']:
+#                             if images["key"] == "XL":
+#                                 tempImage = images["url"]
+                                
+#                         for contents in singleData['attributeGroups']:
+#                             if contents["title"] == "Inhoud":
+#                                 for content in contents["attributes"]:
+#                                     if content["key"] == "Binding":
+#                                         tempBinding = content["value"]
+#                                     if content["key"] == "Language":
+#                                         tempLanguage = content["value"]
+                                
+#                         singleBookResponse["title"] = singleData["title"] if singleData["title"] else None
+#                         singleBookResponse["price"] = singleData['offerData']['offers'][0]['price'] if singleData['offerData']['offers'][0]['price'] else None
+#                         singleBookResponse["imgURL"] = tempImage if tempImage else None
+#                         singleBookResponse["binding"] = tempBinding if tempBinding else None
+#                         singleBookResponse["language"] = tempLanguage if tempLanguage else None
+#                         singleBookResponse["link"] = tempUrl if tempUrl else None
+#                         responses[isbn] = singleBookResponse
+                        
+#                 except Exception as e:
+#                     responses[isbn] = {"error": "Book not found on bol.com - 1"}
+#         except Exception as e:
+#                     responses[isbn] = {"error": "Book not found on bol.com - 2"}
+    
+#     if len(ISBNs) == 1:
+#         return responses[ISBN]
+    
+#     return responses
 
 
 '''' BOEKWINKELTJES '''
