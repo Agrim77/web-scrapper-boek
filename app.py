@@ -119,14 +119,12 @@ def getBookFromISBN_BOL(ISBN):
 
                             # Continue with your code...
 
-                            # responses[isbn] = singleBookResponse
+                            responses[isbn] = singleBookResponse
 
                 except Exception as e:
                     responses[isbn] = {"error": "Product API call error"}
         except Exception as e:
             responses[isbn] = {"error": "Authentication error"}
-
-        responses[isbn] = singleBookResponse
 
     if len(ISBNs) == 1:
         return responses[ISBN]
