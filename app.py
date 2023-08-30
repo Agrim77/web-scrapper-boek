@@ -94,6 +94,8 @@ def getBookFromISBN_BOL(ISBN):
                             for url in singleData['urls']:
                                 if url["key"] == "DESKTOP":
                                     tempUrl = url["value"]
+                                    tempUrl = tempUrl.replace("/p/", "/prijsoverzicht/")
+                                    tempUrl = tempUrl + "?filter=2ndhand&sort=price&sortOrder=asc"
 
                             for images in singleData['images']:
                                 if images["key"] == "XL":
