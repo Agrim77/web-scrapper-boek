@@ -13,12 +13,12 @@ from flask_limiter.util import get_remote_address
 # from waitress import serve
 
 app = Flask(__name__)
-limiter = Limiter(app, key_func=get_remote_address, default_limits=["1 per 5 seconds"])
+limiter = Limiter(app, key_func=get_remote_address, default_limits=["1 per 3 seconds"])
 CORS(app)
 
 '''' BOL '''
 @app.route("/bol/<ISBN>")
-@limiter.limit("1 per 5 seconds")
+@limiter.limit("1 per 3 seconds")
 def getBookFromISBN_BOL(ISBN):
     ISBNs = ISBN.split(',')
     responses = {}
