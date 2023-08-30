@@ -124,9 +124,10 @@ def getBookFromISBN_BOL(ISBN):
                             responses[isbn] = singleBookResponse
 
                 except Exception as e:
-                    responses[isbn] = {"error": "Product API call error"}
+                    responses[isbn] = {"error": f"Product API call error: {str(e)}"}
+
         except Exception as e:
-            responses[isbn] = {"error": "Authentication error"}
+            responses[isbn] = {"error": f"Authentication error: {str(e)}"}
 
     if len(ISBNs) == 1:
         return responses[ISBN]
